@@ -28,9 +28,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $national_id = trim($_POST['national_id']);
     $phone = trim($_POST['phone']);
     $date_joined = $_POST['date_joined'];
+    $monthly_salary = $_POST['monthly_salary'];
 
-    if ($username == "" || $password == "" || $email == "" || $nssf_number == "" || $first_name == "" || $last_name == "" || $national_id == "" || $date_joined == "") {
+    if ($username == "" || $password == "" || $email == "" || $nssf_number == "" || $first_name == "" || $last_name == "" || $national_id == "" || $date_joined == "" || $monthly_salary === "") {
         $error = "Please fill in all required fields.";
+    } elseif ($monthly_salary <= 0) {
+        $error = "Monthly salary must be greater than zero.";
     } else {
         $stmt = $conn->prepare("SELECT user_id FROM users WHERE username = ? OR email = ?");
         $stmt->bind_param("ss", $username, $email);
@@ -53,8 +56,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->execute();
                     $new_user_id = $conn->insert_id;
 
-                    $stmt = $conn->prepare("INSERT INTO employees (user_id, employer_id, nssf_number, first_name, last_name, national_id, phone, date_joined) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->bind_param("iissssss", $new_user_id, $employer_id, $nssf_number, $first_name, $last_name, $national_id, $phone, $date_joined);
+                    $stmt = $conn->prepare("INSERT INTO employees (user_id, employer_id, nssf_number, first_name, last_name, national_id, phone, date_joined, monthly_salary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->bind_param("iissssssd", $new_user_id, $employer_id, $nssf_number, $first_name, $last_name, $national_id, $phone, $date_joined, $monthly_salary);
                     $stmt->execute();
 
                     $conn->commit();
@@ -122,6 +125,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <label>Date Joined</label>
                 <input type="date" name="date_joined" required>
+
+                <label>Monthly Gross Salary (UGX)</label>
+                <input type="number" name="monthly_salary" step="0.01" min="0" required>
+                <p style="font-size:0.78rem; color:#5B6B62; margin-top:4px;">Used to automatically calculate NSSF contributions when generating a TRN.</p>
 
                 <button type="submit">Add Employee</button>
             </form>
