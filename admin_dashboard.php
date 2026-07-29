@@ -162,7 +162,7 @@ if (isset($_GET['added']) || isset($_GET['updated']) || isset($_GET['deleted']))
                     <p class="context-hint">Right-click a row to Edit or Delete.</p>
                     <table>
                         <tr>
-                            <th>ID</th><th>Company Name</th><th>Registration No.</th><th>Address</th><th>Phone</th><th>Employees</th>
+                            <th>ID</th><th>Company Name</th><th>Registration No.</th><th>Address</th><th>Phone</th><th>Employees</th><th>Map</th>
                         </tr>
                         <?php
                         $sql = "SELECT e.*, COUNT(emp.employee_id) AS employee_count
@@ -171,7 +171,7 @@ if (isset($_GET['added']) || isset($_GET['updated']) || isset($_GET['deleted']))
                                 GROUP BY e.employer_id";
                         $result = $conn->query($sql);
                         if ($result->num_rows == 0) {
-                            echo "<tr><td colspan='6' style='text-align:center; color:#5B6B62;'>No employers registered yet.</td></tr>";
+                            echo "<tr><td colspan='7' style='text-align:center; color:#5B6B62;'>No employers registered yet.</td></tr>";
                         }
                         while ($row = $result->fetch_assoc()) {
                             $edit_url = "edit_employer.php?id=" . $row['employer_id'];
@@ -184,6 +184,11 @@ if (isset($_GET['added']) || isset($_GET['updated']) || isset($_GET['deleted']))
                             echo "<td>" . htmlspecialchars($row['address']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['phone']) . "</td>";
                             echo "<td>" . $row['employee_count'] . "</td>";
+                            if (!empty($row['address'])) {
+                                echo "<td><a href='https://www.google.com/maps/dir/?api=1&destination=" . urlencode($row['address']) . "' target='_blank' rel='noopener'>Directions</a></td>";
+                            } else {
+                                echo "<td>&mdash;</td>";
+                            }
                             echo "</tr>";
                         }
                         ?>
