@@ -59,7 +59,7 @@ if (isset($_GET['added']) || isset($_GET['updated']) || isset($_GET['deleted']))
 </head>
 <body>
     <div class="topbar">
-        <span class="brand"><button class="hamburger" onclick="toggleSidebar()">&#9776;</button>NSSF &middot; Admin</span>
+        <span class="brand"><button class="hamburger" onclick="toggleSidebar()">&#9776;</button><img src="images/logo.png" alt="" class="brand-logo" onerror="this.style.display='none';">NSSF &middot; Admin</span>
         <span>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?> &nbsp;|&nbsp; <a href="logout.php">Logout</a></span>
     </div>
 
@@ -149,6 +149,7 @@ if (isset($_GET['added']) || isset($_GET['updated']) || isset($_GET['deleted']))
                 <div class="section-label">Quick Actions</div>
                 <div class="actions-bar" style="margin-top:10px;">
                     <a href="add_employer.php">+ Add New Employer</a>
+                    <a href="email_settings.php">Email Settings</a>
                 </div>
             </div>
 
@@ -185,7 +186,7 @@ if (isset($_GET['added']) || isset($_GET['updated']) || isset($_GET['deleted']))
                             echo "<td>" . htmlspecialchars($row['phone']) . "</td>";
                             echo "<td>" . $row['employee_count'] . "</td>";
                             if (!empty($row['address'])) {
-                                echo "<td><a href='https://www.google.com/maps/dir/?api=1&destination=" . urlencode($row['address']) . "' target='_blank' rel='noopener'>Directions</a></td>";
+                                echo "<td><a href='https://www.google.com/maps/dir/?api=1&origin=" . urlencode('Jinja City House, Lubas Road, Jinja, Uganda') . "&destination=" . urlencode($row['address']) . "' target='_blank' rel='noopener'>Directions</a></td>";
                             } else {
                                 echo "<td>&mdash;</td>";
                             }
@@ -332,5 +333,6 @@ if (isset($_GET['added']) || isset($_GET['updated']) || isset($_GET['deleted']))
             document.getElementById('rowContextMenu').style.display = 'none';
         });
     </script>
+    <?php include 'chatbot_widget.php'; ?>
 </body>
 </html>

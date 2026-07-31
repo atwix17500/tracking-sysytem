@@ -55,6 +55,14 @@ body {
     font-weight: 700;
     font-size: 1.1rem;
     letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+}
+.brand-logo {
+    height: 28px;
+    width: auto;
+    margin-right: 8px;
+    vertical-align: middle;
 }
 .topbar a {
     color: #fff;
@@ -395,6 +403,111 @@ mark {
     width: 100%;
     height: 100%;
     border: 0;
+}
+
+/* ===== NSSF Assistant Chatbot Widget ===== */
+#chatbotBubble {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    background: var(--gold);
+    color: #2b2109;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    z-index: 900;
+    transition: transform 0.15s ease;
+}
+#chatbotBubble:hover { transform: scale(1.08); }
+
+#chatbotWindow {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    bottom: 90px;
+    right: 24px;
+    width: 320px;
+    max-width: calc(100vw - 40px);
+    height: 420px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 10px 34px rgba(0,0,0,0.28);
+    overflow: hidden;
+    z-index: 900;
+}
+#chatbotHeader {
+    background: var(--blue);
+    color: #fff;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid var(--gold);
+}
+#chatbotCloseBtn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+}
+#chatbotMessages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--bg);
+}
+.chatbot-msg {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+.chatbot-msg.bot {
+    background: #fff;
+    border: 1px solid var(--border);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+.chatbot-msg.user {
+    background: var(--green);
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+#chatbotInputRow {
+    display: flex;
+    border-top: 1px solid var(--border);
+    padding: 10px;
+    gap: 8px;
+    background: var(--card-bg);
+}
+#chatbotInputRow input {
+    flex: 1;
+    margin: 0;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+#chatbotInputRow button {
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 0.85rem;
 }
 
 /* ===== Sidebar layout (used on dashboards with panels) ===== */

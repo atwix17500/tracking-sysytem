@@ -47,6 +47,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="login-wrap">
         <div class="login-card">
+            <div style="text-align:center; margin-bottom:8px;">
+                <img src="images/logo.png" alt="NSSF Logo" style="max-height:60px; max-width:100%;" onerror="this.style.display='none';">
+            </div>
             <h2>NSSF Contributions</h2>
             <p class="login-sub">Sign in to your account</p>
 
@@ -64,7 +67,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <button type="submit">Login</button>
             </form>
 
-            <p style="text-align:center; margin-top:18px; font-size:0.85rem;">
+            <p style="text-align:center; margin-top:14px; font-size:0.85rem;">
+                <a href="forgot_password.php">Forgot your password?</a>
+            </p>
+
+            <p style="text-align:center; margin-top:10px; font-size:0.85rem;">
                 Don't have an account? <a href="register_employer.php">Register as an Employer</a>
             </p>
         </div>

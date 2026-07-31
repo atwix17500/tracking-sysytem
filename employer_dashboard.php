@@ -20,6 +20,70 @@ if (!$employer) {
 
 $employer_id = $employer['employer_id'];
 
+// =====================================================================
+// AUTOMATED PAYROLL: on each dashboard visit, check whether THIS month's
+// TRN has already been generated. If not, generate it automatically -
+// no button click needed. Because this checks for EXISTING records first,
+// it naturally only fires once per employer per month (idempotent).
+// =====================================================================
+$auto_generated_trn = null;
+$auto_skipped_employees = [];
+
+$current_month = (int)date('n');
+$current_year = (int)date('Y');
+
+$stmt = $conn->prepare("
+    SELECT COUNT(*) AS c FROM contributions c
+    JOIN employees e ON c.employee_id = e.employee_id
+    WHERE e.employer_id = ? AND c.contribution_month = ? AND c.contribution_year = ?
+");
+$stmt->bind_param("iii", $employer_id, $current_month, $current_year);
+$stmt->execute();
+$already_has_records = $stmt->get_result()->fetch_assoc()['c'] > 0;
+
+if (!$already_has_records) {
+    // Find every employee for this employer with a real salary on file
+    $stmt = $conn->prepare("SELECT employee_id, first_name, last_name, monthly_salary FROM employees WHERE employer_id = ?");
+    $stmt->bind_param("i", $employer_id);
+    $stmt->execute();
+    $candidates = $stmt->get_result();
+
+    $employees_to_bill = [];
+    while ($row = $candidates->fetch_assoc()) {
+        if ($row['monthly_salary'] > 0) {
+            $employees_to_bill[] = $row;
+        } else {
+            $auto_skipped_employees[] = $row['first_name'] . " " . $row['last_name'];
+        }
+    }
+
+    if (count($employees_to_bill) > 0) {
+        $trn_number = "TRN-" . $employer_id . "-" . date('Ymd') . "-" . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
+
+        $conn->begin_transaction();
+        try {
+            foreach ($employees_to_bill as $emp) {
+                $salary = $emp['monthly_salary'];
+                $employee_contribution = round($salary * 0.05, 2);
+                $employer_contribution = round($salary * 0.10, 2);
+                $total_contribution = $employee_contribution + $employer_contribution;
+
+                $stmt = $conn->prepare("INSERT INTO contributions
+                    (employee_id, contribution_month, contribution_year, gross_salary, employee_contribution, employer_contribution, total_contribution, date_paid, status, trn_number)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 'pending', ?)");
+                $stmt->bind_param("iiidddds", $emp['employee_id'], $current_month, $current_year, $salary, $employee_contribution, $employer_contribution, $total_contribution, $trn_number);
+                $stmt->execute();
+            }
+            $conn->commit();
+            log_activity($conn, 'added', 'contributions', null,
+                "Auto-generated payroll TRN $trn_number for " . count($employees_to_bill) . " employee(s) ($current_month/$current_year)");
+            $auto_generated_trn = $trn_number;
+        } catch (Exception $e) {
+            $conn->rollback();
+        }
+    }
+}
+
 function status_badge($status) {
     return "<span class='status " . htmlspecialchars($status) . "'>" . ucfirst(htmlspecialchars($status)) . "</span>";
 }
@@ -154,7 +218,7 @@ if (isset($_GET['updated']) || isset($_GET['deleted'])) {
 </head>
 <body>
     <div class="topbar">
-        <span class="brand"><button class="hamburger" onclick="toggleSidebar()">&#9776;</button>NSSF &middot; Employer</span>
+        <span class="brand"><button class="hamburger" onclick="toggleSidebar()">&#9776;</button><img src="images/logo.png" alt="" class="brand-logo" onerror="this.style.display='none';">NSSF &middot; Employer</span>
         <span>Welcome, <?php echo htmlspecialchars($employer['company_name']); ?> &nbsp;|&nbsp; <a href="logout.php">Logout</a></span>
     </div>
 
@@ -177,6 +241,20 @@ if (isset($_GET['updated']) || isset($_GET['deleted'])) {
             <?php } ?>
             <?php if (isset($_GET['deleted'])) { ?>
                 <p class="message success">Contribution deleted successfully.</p>
+            <?php } ?>
+            <?php if ($auto_generated_trn) { ?>
+                <p class="message success">
+                    Payroll for <?php echo date('F Y'); ?> has been automatically generated.
+                    TRN: <strong><?php echo htmlspecialchars($auto_generated_trn); ?></strong> &middot;
+                    <a href="view_trn.php?trn=<?php echo urlencode($auto_generated_trn); ?>">View breakdown</a>
+                </p>
+            <?php } ?>
+            <?php if (count($auto_skipped_employees) > 0) { ?>
+                <p class="message error">
+                    Skipped from this month's auto-payroll (no salary on file):
+                    <?php echo htmlspecialchars(implode(", ", $auto_skipped_employees)); ?>.
+                    Set their salary under <a href="employer_dashboard.php?panel=employees">Employees &rarr; Edit</a>.
+                </p>
             <?php } ?>
 
             <!-- ===== OVERVIEW PANEL ===== -->
@@ -476,10 +554,13 @@ if (isset($_GET['updated']) || isset($_GET['deleted'])) {
                             </iframe>
                         </div>
                         <div class="actions-bar" style="margin-top:14px;">
-                            <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($employer['address']); ?>" target="_blank" rel="noopener">
+                            <a href="https://www.google.com/maps/dir/?api=1&origin=<?php echo urlencode('Jinja City House, Lubas Road, Jinja, Uganda'); ?>&destination=<?php echo urlencode($employer['address']); ?>" target="_blank" rel="noopener">
                                 Get Directions
                             </a>
                         </div>
+                        <p style="font-size:0.78rem; color:#5B6B62; margin-top:8px;">
+                            Directions start from Jinja City House, Lubas Road (Head Office).
+                        </p>
                     </div>
                 <?php } else { ?>
                     <div class="card">
@@ -649,5 +730,6 @@ if (isset($_GET['updated']) || isset($_GET['deleted'])) {
             }
         }
     </script>
+    <?php include 'chatbot_widget.php'; ?>
 </body>
 </html>

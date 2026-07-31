@@ -81,7 +81,7 @@ $active_panel = isset($_GET['panel']) ? $_GET['panel'] : 'overview';
 </head>
 <body>
     <div class="topbar">
-        <span class="brand"><button class="hamburger" onclick="toggleSidebar()">&#9776;</button>NSSF &middot; Employee</span>
+        <span class="brand"><button class="hamburger" onclick="toggleSidebar()">&#9776;</button><img src="images/logo.png" alt="" class="brand-logo" onerror="this.style.display='none';">NSSF &middot; Employee</span>
         <span>Welcome, <?php echo htmlspecialchars($employee['first_name']); ?> &nbsp;|&nbsp; <a href="logout.php">Logout</a></span>
     </div>
 
@@ -151,6 +151,9 @@ $active_panel = isset($_GET['panel']) ? $_GET['panel'] : 'overview';
             <!-- ===== CONTRIBUTIONS PANEL ===== -->
             <div class="panel" id="panel-contributions">
                 <h2>My Contribution History</h2>
+                <div class="actions-bar">
+                    <a href="statement.php">View / Print Statement</a>
+                </div>
                 <div class="card">
                     <table>
                         <tr>
@@ -224,5 +227,6 @@ $active_panel = isset($_GET['panel']) ? $_GET['panel'] : 'overview';
         });
         showPanel("<?php echo htmlspecialchars($active_panel); ?>");
     </script>
+    <?php include 'chatbot_widget.php'; ?>
 </body>
 </html>
